@@ -51,7 +51,7 @@ export default function BacklogBrowser() {
     priority: new Set(),
     tag: new Set(),
   });
-  const [dropdownsOpen] = useState({
+  const [dropdownsOpen, setDropdownsOpen] = useState({
     status: false,
     priority: false,
     tag: false,
