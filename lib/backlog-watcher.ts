@@ -120,13 +120,11 @@ const getGlobalCache = (): Cache => {
 
 export const getIndex = (): BacklogItem[] => {
   const cache = getGlobalCache();
-  log(`[backlog-watcher] getIndex() called, returned items: ${cache.items.length}`);
   return cache.items;
 };
 
 export const getBacklogConfigs = (): BacklogConfig[] => {
   const cache = getGlobalCache();
-  log(`[backlog-watcher] getBacklogConfigs() called, returned configs: ${cache.configs.length}`);
   return cache.configs;
 };
 

@@ -211,7 +211,7 @@ export default function BacklogBrowser() {
           className="flex-1 min-w-[200px] px-2.5 py-1.5 border border-[#393c46] rounded-md text-[14px] bg-[#1e1f24] text-[#e0e0e0] outline-none focus:border-[#4dabf7]"
         />
 
-        <div className="relative inline-flex items-center min-w-[140px] px-2.5 py-1.5 border border-[#393c46] rounded-md text-[13px] bg-[#272930] cursor-pointer outline-none select-none">
+        <div className="relative inline-flex items-center min-w-[140px] px-2.5 py-1.5 border border-[#393c46] rounded-md text-[13px] bg-[#272930] cursor-pointer outline-none select-none" onMouseDown={(e) => { e.preventDefault(); setDropdownsOpen((prev) => ({ ...prev, status: !prev.status })); }}>
           <span className="flex-1 min-w-0 overflow-hidden text-ellipsis whitespace-nowrap text-[#e0e0e0]">
             {getLabel('status', ['backlog', 'planned', 'in-progress', 'review', 'done', 'cancelled'])}
           </span>
@@ -258,7 +258,7 @@ export default function BacklogBrowser() {
           </div>
         </div>
 
-        <div className="relative inline-flex items-center min-w-[140px] px-2.5 py-1.5 border border-[#393c46] rounded-md text-[13px] bg-[#272930] cursor-pointer outline-none select-none">
+        <div className="relative inline-flex items-center min-w-[140px] px-2.5 py-1.5 border border-[#393c46] rounded-md text-[13px] bg-[#272930] cursor-pointer outline-none select-none" onMouseDown={(e) => { e.preventDefault(); setDropdownsOpen((prev) => ({ ...prev, priority: !prev.priority })); }}>
           <span className="flex-1 min-w-0 overflow-hidden text-ellipsis whitespace-nowrap text-[#e0e0e0]">
             {getLabel('priority', ['critical', 'high', 'medium', 'low'])}
           </span>
@@ -305,7 +305,7 @@ export default function BacklogBrowser() {
           </div>
         </div>
 
-        <div className="relative inline-flex items-center min-w-[140px] px-2.5 py-1.5 border border-[#393c46] rounded-md text-[13px] bg-[#272930] cursor-pointer outline-none select-none">
+        <div className="relative inline-flex items-center min-w-[140px] px-2.5 py-1.5 border border-[#393c46] rounded-md text-[13px] bg-[#272930] cursor-pointer outline-none select-none" onMouseDown={(e) => { e.preventDefault(); setDropdownsOpen((prev) => ({ ...prev, tag: !prev.tag })); }}>
           <span className="flex-1 min-w-0 overflow-hidden text-ellipsis whitespace-nowrap text-[#e0e0e0]">
             {getLabel('tag', allTagOptions)}
           </span>
@@ -419,15 +419,10 @@ export default function BacklogBrowser() {
                 </td>
               </tr>
             ) : (
-              filteredItems.map((item) => {
-                const statusColor = STATUS_COLORS[item.status as keyof typeof STATUS_COLORS] || STATUS_COLORS.backlog;
-                const priorityColor = PRIORITY_COLORS[item.priority as keyof typeof PRIORITY_COLORS] || PRIORITY_COLORS.medium;
-                const tags = (item.tags || []).map((t) => (
-                  <span key={t} className="inline-block px-1.5 py-0.5 rounded text-[11px] bg-[#2d4a6e] text-[#4dabf7] mr-1">
-                    {t}
-                  </span>
-                ));
-                const estimate = item.estimate != null ? item.estimate : '–';
+               filteredItems.map((item) => {
+                 const statusColor = STATUS_COLORS[item.status as keyof typeof STATUS_COLORS] || STATUS_COLORS.backlog;
+                 const priorityColor = PRIORITY_COLORS[item.priority as keyof typeof PRIORITY_COLORS] || PRIORITY_COLORS.medium;
+                 const estimate = item.estimate != null ? item.estimate : '–';
 
                 return (
                   <tr key={item.id} className="hover:bg-[#1e1f24]">
@@ -465,7 +460,7 @@ export default function BacklogBrowser() {
                        </span>
                      </td>
                      <td className="px-3 py-2.5 border-b border-[#393c46] min-w-[120px]">
-                       {tags.map((tag) => (
+                       {(item.tags || []).map((tag) => (
                          <span
                            key={tag}
                            className="inline-block px-1.5 py-0.5 rounded text-[11px] bg-[#2d4a6e] text-[#4dabf7] mr-1 cursor-pointer hover:opacity-80"
