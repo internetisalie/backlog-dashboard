@@ -38,15 +38,22 @@ export function FilterBar({
         <h1 className="text-[18px] font-semibold whitespace-nowrap">{backlogName} Backlog</h1>
       </div>
 
-      <div className="flex-1 min-w-[200px] flex items-center gap-2.5">
+      <div className="flex-1 min-w-[300px] flex items-center gap-2.5">
         <input
           type="search"
           placeholder="Search ID, title, description, tags…"
           autoComplete="off"
           value={filters.q}
           onChange={onSearchChange}
-          className="flex-1 px-2.5 py-1.5 border border-[#393c46] rounded-md text-[14px] bg-[#1e1f24] text-[#e0e0e0] outline-none focus:border-[#4dabf7]"
+          className="flex-1 min-w-[150px] px-2.5 py-1.5 border border-[#393c46] rounded-md text-[14px] bg-[#1e1f24] text-[#e0e0e0] outline-none focus:border-[#4dabf7]"
         />
+
+        {filters.feature && (
+          <div className="flex items-center gap-2 px-2 py-1 bg-[#3d3555] border border-[#b085ff] rounded-md text-[12px] text-[#b085ff] max-w-[200px]">
+            <span className="truncate" title={filters.feature}>Feature: {filters.feature.split('/').pop()}</span>
+            <button onClick={onClearFeature} className="hover:text-white flex-shrink-0">✕</button>
+          </div>
+        )}
 
         <FilterDropdown
           label="Status"
@@ -84,13 +91,6 @@ export function FilterBar({
           onSelectNone={() => onSelectNone('tag')}
         />
       </div>
-
-      {filters.feature && (
-        <div className="flex items-center gap-2 px-2.5 py-1.5 bg-[#4a2d6e] border border-[#b085ff] rounded-md text-[13px] text-[#b085ff]">
-          <span>Feature: {filters.feature}</span>
-          <button onClick={onClearFeature} className="hover:text-white">✕</button>
-        </div>
-      )}
 
       <span className="text-[#a0a0a0] text-[13px] whitespace-nowrap">
         {filteredCount === totalCount
