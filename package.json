@@ -2,6 +2,14 @@
   "name": "backlog-dashboard",
   "version": "0.1.0",
   "private": true,
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/internetisalie/backlog-dashboard.git"
+  },
+  "bugs": {
+    "url": "https://github.com/internetisalie/backlog-dashboard/issues"
+  },
+  "homepage": "https://github.com/internetisalie/backlog-dashboard#readme",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
