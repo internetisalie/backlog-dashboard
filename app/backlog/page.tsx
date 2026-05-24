@@ -144,6 +144,18 @@ export default function BacklogBrowser() {
     setFilters((prev) => ({ ...prev, [type]: new Set() }));
   };
 
+  const handleFilterClick = (type: 'status' | 'priority' | 'tag', value: string) => {
+    setFilters((prev) => {
+      const newSet = new Set(prev[type]);
+      if (newSet.has(value)) {
+        newSet.delete(value);
+      } else {
+        newSet.add(value);
+      }
+      return { ...prev, [type]: newSet };
+    });
+  };
+
   const handleSort = (col: string) => {
     if (col === 'tags') return;
     if (sortCol === col) {
@@ -432,25 +444,38 @@ export default function BacklogBrowser() {
                       <div>{item.title}</div>
                       {item.description && <div className="text-[12px] text-[#a0a0a0] mt-1">{item.description}</div>}
                     </td>
-                    <td className="px-3 py-2.5 border-b border-[#393c46]">
-                      <span
-                        className="inline-block px-1.5 py-0.5 rounded-full text-[11px] font-medium whitespace-nowrap"
-                        style={{ color: statusColor.text, backgroundColor: statusColor.bg }}
-                      >
-                        {item.status}
-                      </span>
-                    </td>
-                    <td className="px-3 py-2.5 border-b border-[#393c46]">
-                      <span
-                        className="inline-block px-1.5 py-0.5 rounded-full text-[11px] font-medium whitespace-nowrap"
-                        style={{ color: priorityColor.text, backgroundColor: priorityColor.bg }}
-                      >
-                        {item.priority}
-                      </span>
-                    </td>
-                    <td className="px-3 py-2.5 border-b border-[#393c46] min-w-[120px]">
-                      {tags}
-                    </td>
+                     <td className="px-3 py-2.5 border-b border-[#393c46]">
+                       <span
+                         className="inline-block px-1.5 py-0.5 rounded-full text-[11px] font-medium whitespace-nowrap cursor-pointer hover:opacity-80"
+                         style={{ color: statusColor.text, backgroundColor: statusColor.bg }}
+                         onClick={() => handleFilterClick('status', item.status)}
+                         title={`Filter by ${item.status}`}
+                       >
+                         {item.status}
+                       </span>
+                     </td>
+                     <td className="px-3 py-2.5 border-b border-[#393c46]">
+                       <span
+                         className="inline-block px-1.5 py-0.5 rounded-full text-[11px] font-medium whitespace-nowrap cursor-pointer hover:opacity-80"
+                         style={{ color: priorityColor.text, backgroundColor: priorityColor.bg }}
+                         onClick={() => handleFilterClick('priority', item.priority)}
+                         title={`Filter by ${item.priority}`}
+                       >
+                         {item.priority}
+                       </span>
+                     </td>
+                     <td className="px-3 py-2.5 border-b border-[#393c46] min-w-[120px]">
+                       {tags.map((tag) => (
+                         <span
+                           key={tag}
+                           className="inline-block px-1.5 py-0.5 rounded text-[11px] bg-[#2d4a6e] text-[#4dabf7] mr-1 cursor-pointer hover:opacity-80"
+                           onClick={() => handleFilterClick('tag', tag)}
+                           title={`Filter by ${tag}`}
+                         >
+                           {tag}
+                         </span>
+                       ))}
+                     </td>
                     <td className="px-3 py-2.5 border-b border-[#393c46] text-center text-[#a0a0a0] whitespace-nowrap">
                       {estimate}
                     </td>
