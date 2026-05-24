@@ -16,15 +16,15 @@ A Next.js 16 dashboard that reads backlog items from external repositories (conf
 |---|---|
 | `~/.config/backlog/backlog-dashboard/backlogs.yaml` | Lists external backlog repositories (e.g., `glimmer-project`) |
 | `lib/backlog-watcher.ts` | Watches backlog directories, parses YAML front matter, caches items |
-| `app/api/backlog/route.ts` | API endpoint that calls `refreshIndex()` on each request |
+| `app/api/backlog/route.ts` | API endpoint that returns cached backlog items |
 | `app/backlog/page.tsx` | Client-side browser with search, filters, sort, Obsidian deep-links |
-| `app/layout.tsx` | Root layout that triggers `startWatching()` on server render |
+| `app/layout.tsx` | Root layout that triggers `startWatching()` and `refreshIndex()` on server render |
 | `lib/backlog-watcher.test.ts` | Unit tests for backlog-watcher module |
 
 ## Data Loading
 
-- `refreshIndex()` is called on each API request to ensure data is fresh
-- `getIndex()` and `getBacklogConfigs()` return cached data (used by tests)
+- `refreshIndex()` is called on server start and by the file watcher on changes
+- `getIndex()` and `getBacklogConfigs()` return cached data (used by tests and API)
 - `startWatching()` sets up file watchers for auto-refresh on changes
 - **Cache Location**: `~/.cache/backlog/backlog-dashboard/cache.json`
 - **Log Location**: `~/.cache/backlog/backlog-dashboard/watcher.log`
@@ -34,7 +34,7 @@ A Next.js 16 dashboard that reads backlog items from external repositories (conf
 
 The dashboard title uses the `name` field from the first config in `backlogs.yaml`. To switch to a different backlog, update `backlogs.yaml` and restart the dev server.
 
-**Note**: The API calls `refreshIndex()` on every request to ensure data freshness. The dev server logs show detailed info about config loading and item indexing.
+**Note**: The API returns cached data. The dev server logs show detailed info about config loading and item indexing.
 
 ## Commands
 
