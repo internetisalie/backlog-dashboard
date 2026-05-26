@@ -59,7 +59,7 @@ export function Tooltip({ content, children }: TooltipProps) {
         ref={triggerRef}
         onMouseEnter={show}
         onMouseLeave={hide}
-        className="inline-flex"
+        className="w-fit"
       >
         {children}
       </span>
