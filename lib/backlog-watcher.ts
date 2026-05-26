@@ -21,6 +21,7 @@ interface BacklogItem {
   estimate?: number | null;
   tags: string[];
   feature?: string;
+  parent_id?: string;
   created: string;
   description: string;
   path: string;
@@ -113,7 +114,7 @@ const getGlobalCache = (): Cache => {
       const data = fs.readFileSync(CACHE_FILE, 'utf-8');
       const cache = JSON.parse(data);
       inMemoryCache = { ...cache, lastLoaded: stats.mtimeMs };
-      return inMemoryCache;
+      return inMemoryCache!;
     }
   } catch (e) {
     log(`[backlog-watcher] Cache read error: ${e}`);
@@ -247,6 +248,7 @@ export const indexBacklog = (root: string, backlogName: string, backlogDir?: str
           estimate: (fields.estimate as number) ?? null,
           tags: Array.isArray(fields.tags) ? (fields.tags as string[]) : [],
           feature: fields.feature ? String(fields.feature) : undefined,
+          parent_id: fields.parent_id ? String(fields.parent_id) : undefined,
           created: String(fields.created || ''),
           description: extractDescription(body),
           path: path.relative(root, fullPath).replace(/\\/g, '/'),
@@ -296,7 +298,7 @@ export const startWatching = (): void => {
     });
 
     watcher.on('error', (error) => {
-      log(`[backlog-watcher] Watcher error for ${config.name}:`, error);
+      log(`[backlog-watcher] Watcher error for ${config.name}: ${error}`);
     });
   }
 };

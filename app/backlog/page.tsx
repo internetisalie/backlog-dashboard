@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { BacklogItem, Filters, PRIORITY_ORDER } from '@/components/backlog/types';
 import { FilterBar } from '@/components/backlog/FilterBar';
@@ -17,7 +17,7 @@ interface BacklogConfig {
 
 const API_URL = '/api/backlog';
 
-export default function BacklogBrowser() {
+function BacklogBrowser() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const selectedProjectParam = searchParams.get('project');
@@ -65,7 +65,7 @@ export default function BacklogBrowser() {
         setProjectIcon(currentConfig?.icon);
         setVaultId(currentConfig?.vaultId);
 
-        const tags: string[] = [...new Set(items.flatMap((i: BacklogItem) => i.tags || []))].sort();
+        const tags: string[] = [...new Set<string>(items.flatMap((i: BacklogItem) => i.tags || []))].sort();
         setAllTagOptions(tags);
       } catch (err: unknown) {
         const message = err instanceof Error ? err.message : String(err);
@@ -247,5 +247,13 @@ export default function BacklogBrowser() {
         *::-webkit-scrollbar-thumb:hover { background: #a0a0a0; }
       `}</style>
     </div>
+  );
+}
+
+export default function BacklogPage() {
+  return (
+    <Suspense>
+      <BacklogBrowser />
+    </Suspense>
   );
 }

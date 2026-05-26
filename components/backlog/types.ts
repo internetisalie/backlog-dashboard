@@ -9,6 +9,7 @@ export interface BacklogItem {
   created: string;
   path: string;
   feature?: string;
+  parent_id?: string;
 }
 
 export interface Filters {
