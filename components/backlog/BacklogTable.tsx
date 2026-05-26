@@ -1,6 +1,7 @@
 import { useState, useMemo } from 'react';
 import { BacklogItem, STATUS_COLORS } from './types';
 import { StatusPill, PriorityPill, TagPill, FeaturePill, TypePill } from './Pills';
+import { Tooltip } from './Tooltip';
 
 interface BacklogTableProps {
   items: BacklogItem[];
@@ -30,24 +31,41 @@ function StatusSparkline({ children }: { children: BacklogItem[] }) {
     status: s,
     count: counts[s],
     pct: (counts[s] / total) * 100,
-    color: (STATUS_COLORS[s] || STATUS_COLORS.backlog).bg,
     textColor: (STATUS_COLORS[s] || STATUS_COLORS.backlog).text,
   }));
 
-  const tooltip = segments.map((s) => `${s.status}: ${s.count}`).join(' · ');
+  const tooltipContent = (
+    <div className="flex flex-col gap-1">
+      {segments.map((s) => (
+        <div key={s.status} className="flex items-center gap-2">
+          <span
+            className="inline-block w-2 h-2 rounded-sm flex-shrink-0"
+            style={{ backgroundColor: s.textColor }}
+          />
+          <span style={{ color: s.textColor }} className="capitalize">{s.status}</span>
+          <span className="text-[#606370] ml-auto pl-4">{s.count}</span>
+        </div>
+      ))}
+      <div className="border-t border-[#393c46] mt-0.5 pt-0.5 text-[#606370] text-right">
+        {total} total
+      </div>
+    </div>
+  );
 
   return (
-    <div className="mt-1.5" title={tooltip}>
-      <div className="flex rounded-sm overflow-hidden h-[5px] w-[80px] gap-[1px]">
-        {segments.map((s) => (
-          <div
-            key={s.status}
-            style={{ width: `${s.pct}%`, backgroundColor: s.textColor, opacity: 0.7 }}
-          />
-        ))}
+    <Tooltip content={tooltipContent}>
+      <div className="mt-1.5 cursor-default">
+        <div className="flex rounded-sm overflow-hidden h-[5px] w-[80px] gap-[1px]">
+          {segments.map((s) => (
+            <div
+              key={s.status}
+              style={{ width: `${s.pct}%`, backgroundColor: s.textColor, opacity: 0.7 }}
+            />
+          ))}
+        </div>
+        <div className="text-[10px] text-[#606370] mt-0.5">{total} items</div>
       </div>
-      <div className="text-[10px] text-[#606370] mt-0.5">{total} items</div>
-    </div>
+    </Tooltip>
   );
 }
 
