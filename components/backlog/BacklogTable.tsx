@@ -34,8 +34,9 @@ function buildFlatRows(items: BacklogItem[], expanded: Set<string>): FlatRow[] {
   }
 
   const flatten = (nodes: BacklogItem[], depth: number): FlatRow[] => {
+    const sorted = [...nodes].sort((a, b) => a.id.localeCompare(b.id, undefined, { numeric: true }));
     const rows: FlatRow[] = [];
-    for (const item of nodes) {
+    for (const item of sorted) {
       const children = childrenOf.get(item.id) ?? [];
       const hasChildren = children.length > 0;
       const isExpanded = expanded.has(item.id);
