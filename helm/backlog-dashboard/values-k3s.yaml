@@ -72,6 +72,12 @@ backlog:
         path: "/home/mini/Documents/src/glimmer-project"  # Host path for Obsidian deep-links
         mountPath: "/repos/glimmer-project"  # Container mount path
         icon: "/stars@8x.png"
+      - name: "Lunar"
+        path: "/home/mini/Documents/src/lua/lunar/docs"
+        mountPath: "/repos/lunar/docs"
+        backlogDir: "features"
+        vaultId: "711c1b0e7299620f"
+        icon: "/rocket@8x.png"
 
   # Volume mounts - ensure these paths exist on k3s node
   volumes:
