@@ -283,7 +283,8 @@ export const startWatching = (): void => {
   const configs = loadConfig();
 
   for (const config of configs) {
-    const backlogDir = path.join(config.path, 'docs', 'backlog');
+    const relDir = config.backlogDir || path.join('docs', 'backlog');
+    const backlogDir = path.join(config.path, relDir);
 
     if (!fs.existsSync(backlogDir)) {
       log(`[backlog-watcher] Backlog directory not found: ${backlogDir}`);
