@@ -185,7 +185,7 @@ export function BacklogTable({
             rows.map(({ item, depth, hasChildren, isExpanded }) => {
               const children = childrenOf.get(item.id) ?? [];
               return (
-                <tr key={item.id} className="hover:bg-[#1e1f24]">
+                <tr key={item.id} className="hover:bg-[#1e1f24] h-[72px]">
                   <td className="px-3 py-2.5 border-b border-[#393c46] font-mono text-[13px] whitespace-nowrap">
                     <div className="flex items-center gap-1" style={{ paddingLeft: `${depth * 16}px` }}>
                       {hasChildren ? (
