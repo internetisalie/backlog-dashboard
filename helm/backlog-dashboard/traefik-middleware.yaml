@@ -1,0 +1,42 @@
+# Optional Traefik middlewares for additional functionality
+# Apply with: kubectl apply -f traefik-middleware.yaml
+
+---
+# Middleware: Add security headers
+apiVersion: traefik.containo.us/v1alpha1
+kind: Middleware
+metadata:
+  name: backlog-security-headers
+  namespace: default
+spec:
+  headers:
+    customResponseHeaders:
+      X-Content-Type-Options: "nosniff"
+      X-Frame-Options: "SAMEORIGIN"
+      X-XSS-Protection: "1; mode=block"
+    sslRedirect: true
+    stsSeconds: 31536000
+    stsIncludeSubdomains: true
+    stsPreload: true
+
+---
+# Middleware: Rate limiting (optional)
+apiVersion: traefik.containo.us/v1alpha1
+kind: Middleware
+metadata:
+  name: backlog-rate-limit
+  namespace: default
+spec:
+  rateLimit:
+    average: 100
+    burst: 50
+
+---
+# Middleware: Compress responses
+apiVersion: traefik.containo.us/v1alpha1
+kind: Middleware
+metadata:
+  name: backlog-compress
+  namespace: default
+spec:
+  compress: {}

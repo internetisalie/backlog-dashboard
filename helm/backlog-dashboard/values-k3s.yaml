@@ -1,0 +1,90 @@
+# K3s deployment values for backlog.internetisalie.net
+# Use: helm install backlog ./helm/backlog-dashboard -f ./helm/backlog-dashboard/values-k3s.yaml
+
+replicaCount: 1
+
+image:
+  repository: registry.internetisalie.net/backlog-dashboard
+  pullPolicy: IfNotPresent
+  tag: "0.1.0"
+
+serviceAccount:
+  create: true
+  annotations: {}
+  name: ""
+
+podAnnotations: {}
+
+podSecurityContext:
+  fsGroup: 1001
+
+securityContext:
+  runAsNonRoot: true
+  runAsUser: 1001
+  capabilities:
+    drop:
+    - ALL
+  readOnlyRootFilesystem: false
+
+service:
+  type: ClusterIP
+  port: 3000
+
+ingress:
+  enabled: true
+  className: "traefik"
+  annotations:
+    traefik.ingress.kubernetes.io/router.entrypoints: websecure
+    traefik.ingress.kubernetes.io/router.tls: "true"
+    # Optional: Redirect HTTP to HTTPS
+    # traefik.ingress.kubernetes.io/redirect-entry-point: https
+    # traefik.ingress.kubernetes.io/redirect-permanent: "true"
+  hosts:
+    - host: backlog.internetisalie.net
+      paths:
+        - path: /
+          pathType: Prefix
+  tls:
+    - secretName: internetisalie-net-fullcert
+      hosts:
+        - backlog.internetisalie.net
+
+resources:
+  limits:
+    cpu: 500m
+    memory: 512Mi
+  requests:
+    cpu: 100m
+    memory: 128Mi
+
+autoscaling:
+  enabled: false
+
+nodeSelector: {}
+tolerations: []
+affinity: {}
+
+# Backlog configuration for k3s node
+backlog:
+  config:
+    backlogs:
+      - name: "Glimmer"
+        path: "/home/mini/Documents/src/glimmer-project"  # Host path for Obsidian deep-links
+        mountPath: "/repos/glimmer-project"  # Container mount path
+        icon: "/stars@8x.png"
+
+  # Volume mounts - ensure these paths exist on k3s node
+  volumes:
+    - name: glimmer
+      hostPath:
+        path: /home/mini/Documents/src/glimmer-project
+        type: Directory
+    - name: lunar
+      hostPath:
+        path: /home/mini/Documents/src/lua/lunar/docs
+        type: Directory
+
+# Use emptyDir for cache (lightweight, regenerated on pod restart)
+persistence:
+  enabled: true
+  emptyDir: true

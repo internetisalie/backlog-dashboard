@@ -9,8 +9,9 @@ describe('backlog-watcher', () => {
   describe('loadConfig', () => {
     it('should load backlog configs from backlogs.yaml', () => {
       const configs = loadConfig();
-      expect(configs).toHaveLength(1);
-      expect(configs[0]).toEqual({
+      expect(configs.length).toBeGreaterThanOrEqual(1);
+      const glimmer = configs.find((c) => c.name === 'Glimmer');
+      expect(glimmer).toMatchObject({
         name: 'Glimmer',
         path: '/home/mini/Documents/src/glimmer-project',
       });

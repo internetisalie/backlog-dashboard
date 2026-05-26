@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "backlog-dashboard.fullname" . }}-config
+  labels:
+    {{- include "backlog-dashboard.labels" . | nindent 4 }}
+data:
+  backlogs.yaml: |
+    {{- .Values.backlog.config | toYaml | nindent 4 }}

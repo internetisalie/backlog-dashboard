@@ -1,0 +1,96 @@
+# K3s deployment with Traefik advanced features
+# Use: helm install backlog ./helm/backlog-dashboard -f ./helm/backlog-dashboard/values-k3s-traefik-advanced.yaml
+# Prerequisites: Apply traefik-middleware.yaml first
+
+replicaCount: 1
+
+image:
+  repository: backlog-dashboard
+  pullPolicy: IfNotPresent
+  tag: "latest"
+
+serviceAccount:
+  create: true
+  annotations: {}
+  name: ""
+
+podAnnotations: {}
+
+podSecurityContext:
+  fsGroup: 1001
+
+securityContext:
+  runAsNonRoot: true
+  runAsUser: 1001
+  capabilities:
+    drop:
+    - ALL
+  readOnlyRootFilesystem: false
+
+service:
+  type: ClusterIP
+  port: 3000
+
+ingress:
+  enabled: true
+  className: "traefik"
+  annotations:
+    traefik.ingress.kubernetes.io/router.entrypoints: websecure
+    traefik.ingress.kubernetes.io/router.tls: "true"
+    # Apply middlewares (create with traefik-middleware.yaml first)
+    traefik.ingress.kubernetes.io/router.middlewares: default-backlog-security-headers@kubernetescrd,default-backlog-compress@kubernetescrd
+    # Optional: Enable access logs for this ingress
+    # traefik.ingress.kubernetes.io/router.middlewares: default-backlog-security-headers@kubernetescrd,default-backlog-compress@kubernetescrd,default-backlog-rate-limit@kubernetescrd
+  hosts:
+    - host: backlog.internetisalie.net
+      paths:
+        - path: /
+          pathType: Prefix
+  tls:
+    - secretName: internetisalie-net-fullcert
+      hosts:
+        - backlog.internetisalie.net
+
+resources:
+  limits:
+    cpu: 500m
+    memory: 512Mi
+  requests:
+    cpu: 100m
+    memory: 128Mi
+
+autoscaling:
+  enabled: false
+
+nodeSelector: {}
+tolerations: []
+affinity: {}
+
+# Backlog configuration for k3s node
+backlog:
+  config:
+    backlogs:
+      - name: "Glimmer"
+        path: "/home/mini/Documents/src/glimmer-project"
+        mountPath: "/repos/glimmer-project"
+        icon: "/stars@8x.png"
+      - name: "Lunar"
+        path: "/home/mini/Documents/src/lua/lunar/docs"
+        mountPath: "/repos/lunar/docs"
+        backlogDir: "features"
+        vaultId: "711c1b0e7299620f"
+        icon: "/rocket@8x.png"
+
+  volumes:
+    - name: glimmer
+      hostPath:
+        path: /home/mini/Documents/src/glimmer-project
+        type: Directory
+    - name: lunar
+      hostPath:
+        path: /home/mini/Documents/src/lua/lunar/docs
+        type: Directory
+
+persistence:
+  enabled: true
+  emptyDir: true

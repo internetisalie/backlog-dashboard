@@ -1,8 +1,20 @@
-import { getIndex, getBacklogConfigs } from '@/lib/backlog-watcher';
+import { getIndex, getBacklogConfigs, refreshIndex, startWatching } from '@/lib/backlog-watcher';
 import { NextResponse } from 'next/server';
+
+let initialized = false;
+
+function ensureInitialized() {
+  if (!initialized) {
+    console.log('[API] First call - initializing backlog watcher');
+    refreshIndex();
+    startWatching();
+    initialized = true;
+  }
+}
 
 export async function GET(request: Request) {
   try {
+    ensureInitialized();
     console.log('[API] GET /api/backlog - returning cached data from file');
     const { searchParams } = new URL(request.url);
     const projectName = searchParams.get('project');

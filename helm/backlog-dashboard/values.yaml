@@ -1,0 +1,93 @@
+replicaCount: 1
+
+image:
+  repository: backlog-dashboard
+  pullPolicy: IfNotPresent
+  tag: "latest"
+
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+
+serviceAccount:
+  create: true
+  annotations: {}
+  name: ""
+
+podAnnotations: {}
+
+podSecurityContext:
+  fsGroup: 1001
+
+securityContext:
+  runAsNonRoot: true
+  runAsUser: 1001
+  capabilities:
+    drop:
+    - ALL
+  readOnlyRootFilesystem: false
+
+service:
+  type: ClusterIP
+  port: 3000
+
+ingress:
+  enabled: false
+  className: ""
+  annotations: {}
+  hosts:
+    - host: backlog.local
+      paths:
+        - path: /
+          pathType: Prefix
+  tls: []
+
+resources:
+  limits:
+    cpu: 500m
+    memory: 512Mi
+  requests:
+    cpu: 100m
+    memory: 128Mi
+
+autoscaling:
+  enabled: false
+  minReplicas: 1
+  maxReplicas: 3
+  targetCPUUtilizationPercentage: 80
+
+nodeSelector: {}
+tolerations: []
+affinity: {}
+
+# Backlog configuration
+backlog:
+  config:
+    backlogs:
+      - name: "Glimmer"
+        path: "/home/user/Documents/src/glimmer-project"
+        mountPath: "/repos/glimmer-project"
+        icon: "/stars@8x.png"
+      - name: "Lunar"
+        path: "/home/user/Documents/src/lua/lunar/docs"
+        mountPath: "/repos/lunar/docs"
+        backlogDir: "features"
+        vaultId: "711c1b0e7299620f"
+        icon: "/rocket@8x.png"
+
+  volumes:
+    - name: glimmer
+      hostPath:
+        path: /home/user/Documents/src/glimmer-project
+        type: Directory
+    - name: lunar
+      hostPath:
+        path: /home/user/Documents/src/lua/lunar/docs
+        type: Directory
+
+persistence:
+  enabled: true
+  storageClass: ""
+  accessMode: ReadWriteOnce
+  size: 1Gi
+  emptyDir: true

@@ -1,0 +1,29 @@
+# Dependencies — must be built clean inside the container
+node_modules
+
+# Next.js build output
+.next
+out
+
+# Local env files
+.env*
+
+# Dev/editor artifacts
+.git
+.gitignore
+.idea
+.kilo
+.gemini
+.DS_Store
+*.pem
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+
+# TypeScript incremental build
+*.tsbuildinfo
+next-env.d.ts
+
+# Test coverage
+coverage

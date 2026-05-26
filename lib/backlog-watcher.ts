@@ -7,7 +7,14 @@ import * as fsExtra from 'fs-extra';
 
 interface BacklogConfig {
   name: string;
+  /** Canonical host path — used for Obsidian deep-links and display. */
   path: string;
+  /**
+   * Override the filesystem path used when reading/watching files.
+   * Set this when the repo is bind-mounted at a different location
+   * than `path` (e.g. inside a Docker container).
+   */
+  mountPath?: string;
   icon?: string;
   backlogDir?: string;
   vaultId?: string;
@@ -140,8 +147,9 @@ export const refreshIndex = (): BacklogItem[] => {
   const items: BacklogItem[] = [];
 
   for (const config of configs) {
-    log(`[backlog-watcher] Indexing backlog: ${config.name} at ${config.path}`);
-    const backlogItems = indexBacklog(config.path, config.name, config.backlogDir);
+    const fsPath = config.mountPath || config.path;
+    log(`[backlog-watcher] Indexing backlog: ${config.name} at ${fsPath}${config.mountPath ? ` (mounted from ${config.path})` : ''}`);
+    const backlogItems = indexBacklog(fsPath, config.name, config.backlogDir);
     log(`[backlog-watcher] Found ${backlogItems.length} items in ${config.name}`);
     items.push(...backlogItems);
   }
@@ -267,7 +275,8 @@ export const indexBacklog = (root: string, backlogName: string, backlogDir?: str
 
 export const loadConfig = (): BacklogConfig[] => {
   try {
-    const configPath = path.join(os.homedir(), '.config', 'backlog', 'backlog-dashboard', 'backlogs.yaml');
+    const defaultPath = path.join(os.homedir(), '.config', 'backlog', 'backlog-dashboard', 'backlogs.yaml');
+    const configPath = process.env.BACKLOGS_CONFIG || defaultPath;
     log(`[backlog-watcher] Loading config from: ${configPath}`);
     const content = fs.readFileSync(configPath, 'utf-8');
     const config = yaml.load(content) as { backlogs: BacklogConfig[] };
@@ -283,8 +292,9 @@ export const startWatching = (): void => {
   const configs = loadConfig();
 
   for (const config of configs) {
+    const fsPath = config.mountPath || config.path;
     const relDir = config.backlogDir || path.join('docs', 'backlog');
-    const backlogDir = path.join(config.path, relDir);
+    const backlogDir = path.join(fsPath, relDir);
 
     if (!fs.existsSync(backlogDir)) {
       log(`[backlog-watcher] Backlog directory not found: ${backlogDir}`);

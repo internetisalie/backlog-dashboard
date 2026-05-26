@@ -48,16 +48,24 @@ function BacklogBrowser() {
   useEffect(() => {
     async function init() {
       try {
-        const queryParam = selectedProjectParam ? `?project=${encodeURIComponent(selectedProjectParam)}` : '';
+        // First fetch all configs to determine default project
+        const configResp = await fetch(`${API_URL}`);
+        if (!configResp.ok) throw new Error(`HTTP ${configResp.status} fetching ${API_URL}`);
+        const configData = await configResp.json();
+        const backlogConfigs = configData.configs || [];
+        
+        // Use selected project param, or default to first project
+        const projectName = selectedProjectParam || backlogConfigs[0]?.name || 'Backlog';
+        
+        // Fetch items for the selected/default project
+        const queryParam = `?project=${encodeURIComponent(projectName)}`;
         const resp = await fetch(`${API_URL}${queryParam}`);
         if (!resp.ok) throw new Error(`HTTP ${resp.status} fetching ${API_URL}`);
         const data = await resp.json();
         const items = Array.isArray(data) ? data : (data.items || []);
-        const backlogConfigs = data.configs || [];
+        
         setAllItems(items);
         setConfigs(backlogConfigs);
-
-        const projectName = selectedProjectParam || backlogConfigs[0]?.name || 'Backlog';
         setBacklogName(projectName);
 
         // Find the current project config and get its icon and vaultId

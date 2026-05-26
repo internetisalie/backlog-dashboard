@@ -1,0 +1,17 @@
+{{- if and .Values.persistence.enabled (not .Values.persistence.emptyDir) }}
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ include "backlog-dashboard.fullname" . }}-cache
+  labels:
+    {{- include "backlog-dashboard.labels" . | nindent 4 }}
+spec:
+  accessModes:
+    - {{ .Values.persistence.accessMode }}
+  resources:
+    requests:
+      storage: {{ .Values.persistence.size }}
+  {{- if .Values.persistence.storageClass }}
+  storageClassName: {{ .Values.persistence.storageClass }}
+  {{- end }}
+{{- end }}
