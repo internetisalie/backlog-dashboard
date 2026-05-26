@@ -1,4 +1,4 @@
-import { STATUS_COLORS, PRIORITY_COLORS } from './types';
+import { STATUS_COLORS, PRIORITY_COLORS, TYPE_COLORS } from './types';
 
 interface PillProps {
   label: string;
@@ -54,6 +54,21 @@ export function FeaturePill({ label, onClick, title }: PillProps) {
       title={title}
     >
       {label}
+    </span>
+  );
+}
+
+export function TypePill({ label, onClick, title }: PillProps) {
+  const colors = TYPE_COLORS[label];
+  if (!colors) return null;
+  return (
+    <span
+      className="inline-block px-1.5 py-0.5 rounded text-[11px] font-medium mr-1 cursor-pointer hover:opacity-80"
+      style={{ color: colors.text, backgroundColor: colors.bg }}
+      onClick={onClick}
+      title={title}
+    >
+      {colors.label}
     </span>
   );
 }

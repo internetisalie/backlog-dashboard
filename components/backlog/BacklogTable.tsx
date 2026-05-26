@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react';
 import { BacklogItem } from './types';
-import { StatusPill, PriorityPill, TagPill, FeaturePill } from './Pills';
+import { StatusPill, PriorityPill, TagPill, FeaturePill, TypePill } from './Pills';
 
 interface BacklogTableProps {
   items: BacklogItem[];
@@ -148,7 +148,10 @@ export function BacklogTable({
                   </div>
                 </td>
                 <td className="px-3 py-2.5 border-b border-[#393c46]">
-                  <div>{item.title}</div>
+                  <div className="flex items-baseline gap-1.5 flex-wrap">
+                    <span>{item.title}</span>
+                    {item.type && <TypePill label={item.type} title={item.type} />}
+                  </div>
                   {item.description && (
                     <div className="text-[12px] text-[#a0a0a0] mt-1">{item.description}</div>
                   )}

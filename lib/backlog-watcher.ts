@@ -22,6 +22,7 @@ interface BacklogItem {
   tags: string[];
   feature?: string;
   parent_id?: string;
+  type?: string;
   created: string;
   description: string;
   path: string;
@@ -249,6 +250,7 @@ export const indexBacklog = (root: string, backlogName: string, backlogDir?: str
           tags: Array.isArray(fields.tags) ? (fields.tags as string[]) : [],
           feature: fields.feature ? String(fields.feature) : undefined,
           parent_id: fields.parent_id ? String(fields.parent_id) : undefined,
+          type: fields.type ? String(fields.type) : undefined,
           created: String(fields.created || ''),
           description: extractDescription(body),
           path: path.relative(root, fullPath).replace(/\\/g, '/'),
