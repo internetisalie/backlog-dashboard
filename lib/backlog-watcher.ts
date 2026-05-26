@@ -8,6 +8,9 @@ import * as fsExtra from 'fs-extra';
 interface BacklogConfig {
   name: string;
   path: string;
+  icon?: string;
+  backlogDir?: string;
+  vaultId?: string;
 }
 
 interface BacklogItem {
@@ -136,7 +139,7 @@ export const refreshIndex = (): BacklogItem[] => {
 
   for (const config of configs) {
     log(`[backlog-watcher] Indexing backlog: ${config.name} at ${config.path}`);
-    const backlogItems = indexBacklog(config.path, config.name);
+    const backlogItems = indexBacklog(config.path, config.name, config.backlogDir);
     log(`[backlog-watcher] Found ${backlogItems.length} items in ${config.name}`);
     items.push(...backlogItems);
   }
@@ -195,9 +198,16 @@ const parseFrontMatter = (text: string): { fields: Record<string, unknown>; body
   return { fields, body };
 };
 
-export const indexBacklog = (root: string, backlogName: string): BacklogItem[] => {
-  const backlogDir = path.join(root, 'docs', 'backlog');
+export const indexBacklog = (root: string, backlogName: string, backlogDir?: string): BacklogItem[] => {
+  const dir = backlogDir || path.join('docs', 'backlog');
+  const fullBacklogDir = path.join(root, dir);
   const items: BacklogItem[] = [];
+
+  // Return empty items if backlog dir doesn't exist
+  if (!fs.existsSync(fullBacklogDir)) {
+    log(`[backlog-watcher] Backlog directory not found: ${fullBacklogDir}`);
+    return items;
+  }
 
   const walk = (dir: string) => {
     const entries = fs.readdirSync(dir);
@@ -217,12 +227,20 @@ export const indexBacklog = (root: string, backlogName: string): BacklogItem[] =
         const text = fs.readFileSync(fullPath, 'utf-8');
         const { fields, body } = parseFrontMatter(text);
 
-        if (!fields.id) {
+        // Try to get ID from fields, or extract from title, or use filename
+        let id = String(fields.id || '');
+        if (!id && fields.title) {
+          // Try to extract ID from title like "INSP-01: Undeclared Variable"
+          const idMatch = String(fields.title).match(/^([A-Z]+-\d+)/);
+          id = idMatch ? idMatch[1] : '';
+        }
+        // If still no ID, skip this file
+        if (!id) {
           continue;
         }
 
         const item: BacklogItem = {
-          id: String(fields.id || ''),
+          id,
           title: String(fields.title || ''),
           status: String(fields.status || ''),
           priority: String(fields.priority || ''),
@@ -239,7 +257,7 @@ export const indexBacklog = (root: string, backlogName: string): BacklogItem[] =
     }
   };
 
-  walk(backlogDir);
+  walk(fullBacklogDir);
   return items.sort((a, b) => a.id.localeCompare(b.id));
 };
 

@@ -1,12 +1,20 @@
 import { getIndex, getBacklogConfigs } from '@/lib/backlog-watcher';
 import { NextResponse } from 'next/server';
 
-export async function GET() {
+export async function GET(request: Request) {
   try {
     console.log('[API] GET /api/backlog - returning cached data from file');
-    const items = getIndex();
+    const { searchParams } = new URL(request.url);
+    const projectName = searchParams.get('project');
+
+    const allItems = getIndex();
     const configs = getBacklogConfigs();
-    console.log(`[API] Items: ${items.length}, Configs: ${configs.length}`);
+
+    const items = projectName
+      ? allItems.filter((item) => item.backlogName === projectName)
+      : allItems;
+
+    console.log(`[API] Items: ${items.length}/${allItems.length}, Configs: ${configs.length}, Project: ${projectName || 'all'}`);
     return NextResponse.json({ items, configs });
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : String(error);

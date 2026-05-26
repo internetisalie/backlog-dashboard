@@ -1,14 +1,31 @@
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
+import { useSearchParams, useRouter } from 'next/navigation';
 import { BacklogItem, Filters, PRIORITY_ORDER } from '@/components/backlog/types';
 import { FilterBar } from '@/components/backlog/FilterBar';
 import { BacklogTable } from '@/components/backlog/BacklogTable';
+import { ProjectSelector } from '@/components/backlog/ProjectSelector';
+
+interface BacklogConfig {
+  name: string;
+  path: string;
+  icon?: string;
+  backlogDir?: string;
+  vaultId?: string;
+}
 
 const API_URL = '/api/backlog';
 
 export default function BacklogBrowser() {
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const selectedProjectParam = searchParams.get('project');
+
   const [allItems, setAllItems] = useState<BacklogItem[]>([]);
+  const [configs, setConfigs] = useState<BacklogConfig[]>([]);
+  const [projectIcon, setProjectIcon] = useState<string | undefined>();
+  const [vaultId, setVaultId] = useState<string | undefined>();
   const [sortCol, setSortCol] = useState<string>('priority');
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('asc');
   const [filters, setFilters] = useState<Filters>({
@@ -25,17 +42,29 @@ export default function BacklogBrowser() {
   });
   const [allTagOptions, setAllTagOptions] = useState<string[]>([]);
   const [error, setError] = useState<string | null>(null);
-  const [backlogName, setBacklogName] = useState<string>('Glimmer');
+  const [backlogName, setBacklogName] = useState<string>('Backlog');
+  const [isProjectSelectorOpen, setIsProjectSelectorOpen] = useState(false);
 
   useEffect(() => {
     async function init() {
       try {
-        const resp = await fetch(API_URL);
+        const queryParam = selectedProjectParam ? `?project=${encodeURIComponent(selectedProjectParam)}` : '';
+        const resp = await fetch(`${API_URL}${queryParam}`);
         if (!resp.ok) throw new Error(`HTTP ${resp.status} fetching ${API_URL}`);
         const data = await resp.json();
         const items = Array.isArray(data) ? data : (data.items || []);
+        const backlogConfigs = data.configs || [];
         setAllItems(items);
-        setBacklogName(Array.isArray(data) ? 'Backlog' : (data.configs?.[0]?.name || 'Backlog'));
+        setConfigs(backlogConfigs);
+
+        const projectName = selectedProjectParam || backlogConfigs[0]?.name || 'Backlog';
+        setBacklogName(projectName);
+
+        // Find the current project config and get its icon and vaultId
+        const currentConfig = backlogConfigs.find((c: BacklogConfig) => c.name === projectName);
+        setProjectIcon(currentConfig?.icon);
+        setVaultId(currentConfig?.vaultId);
+
         const tags: string[] = [...new Set(items.flatMap((i: BacklogItem) => i.tags || []))].sort();
         setAllTagOptions(tags);
       } catch (err: unknown) {
@@ -44,7 +73,11 @@ export default function BacklogBrowser() {
       }
     }
     init();
-  }, []);
+  }, [selectedProjectParam]);
+
+  const handleProjectSelect = (projectName: string) => {
+    router.push(`/backlog?project=${encodeURIComponent(projectName)}`);
+  };
 
   const filteredItems = useMemo(() => {
     let items = allItems;
@@ -154,7 +187,8 @@ export default function BacklogBrowser() {
 
   const obsidianHref = (path: string) => {
     const file = path.replace(/\.md$/, '');
-    return `obsidian://open?vault=glimmer-project&file=${encodeURIComponent(file)}`;
+    const vault = vaultId || backlogName;
+    return `obsidian://open?vault=${vault}&file=${encodeURIComponent(file)}`;
   };
 
   if (error) {
@@ -173,6 +207,7 @@ export default function BacklogBrowser() {
     <div className="flex flex-col min-h-screen bg-[#1e1f24] text-[#e0e0e0] font-sans">
       <FilterBar
         backlogName={backlogName}
+        projectIcon={projectIcon}
         filters={filters}
         allTagOptions={allTagOptions}
         totalCount={allItems.length}
@@ -184,6 +219,16 @@ export default function BacklogBrowser() {
         onSelectNone={handleSelectNone}
         onToggleDropdown={toggleDropdown}
         onClearFeature={() => setFilters(prev => ({ ...prev, feature: undefined }))}
+        onOpenProjectSelector={() => setIsProjectSelectorOpen(true)}
+        projectCount={configs.length}
+      />
+
+      <ProjectSelector
+        configs={configs}
+        selectedProject={backlogName}
+        onSelect={handleProjectSelect}
+        isOpen={isProjectSelectorOpen}
+        onClose={() => setIsProjectSelectorOpen(false)}
       />
 
       <BacklogTable

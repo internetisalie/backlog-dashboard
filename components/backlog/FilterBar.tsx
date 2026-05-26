@@ -4,6 +4,7 @@ import { FilterDropdown } from './FilterDropdown';
 
 interface FilterBarProps {
   backlogName: string;
+  projectIcon?: string;
   filters: Filters;
   allTagOptions: string[];
   totalCount: number;
@@ -15,10 +16,13 @@ interface FilterBarProps {
   onSelectNone: (type: 'status' | 'priority' | 'tag') => void;
   onToggleDropdown: (type: 'status' | 'priority' | 'tag') => void;
   onClearFeature: () => void;
+  onOpenProjectSelector?: () => void;
+  projectCount?: number;
 }
 
 export function FilterBar({
   backlogName,
+  projectIcon,
   filters,
   allTagOptions,
   totalCount,
@@ -30,11 +34,30 @@ export function FilterBar({
   onSelectNone,
   onToggleDropdown,
   onClearFeature,
+  onOpenProjectSelector,
+  projectCount,
 }: FilterBarProps) {
+  const hasMultipleProjects = projectCount && projectCount > 1;
+
   return (
     <div className="bg-[#272930] border-b border-[#393c46] px-6 py-2.5 flex flex-wrap gap-4 items-center">
       <div className="flex items-center gap-3 mr-2">
-        <Image src="/stars@8x.png" alt="Icon" width={24} height={24} className="w-6 h-6" />
+        <button
+          onClick={onOpenProjectSelector}
+          className="relative flex items-center gap-2 hover:opacity-80 transition-opacity"
+          title={hasMultipleProjects ? 'Click to switch project' : 'View project info'}
+        >
+          <Image 
+            src={projectIcon || "/stars@8x.png"} 
+            alt="Project Icon" 
+            width={24} 
+            height={24} 
+            className="w-6 h-6" 
+          />
+          {hasMultipleProjects && (
+            <span className="absolute top-0 right-0 w-2 h-2 bg-[#4dabf7] rounded-full" />
+          )}
+        </button>
         <h1 className="text-[18px] font-semibold whitespace-nowrap">{backlogName} Backlog</h1>
       </div>
 
