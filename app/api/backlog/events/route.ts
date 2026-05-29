@@ -9,7 +9,7 @@ export async function GET(request: Request) {
   console.log(`[SSE][${id}] New connection`);
 
   const stream = new ReadableStream({
-    start(controller) {
+    start(controller: ReadableStreamDefaultController) {
       const send = (data: string, event?: string) => {
         let msg = '';
         if (event) msg += `event: ${event}\n`;
