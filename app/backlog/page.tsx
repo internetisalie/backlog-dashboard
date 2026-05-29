@@ -41,35 +41,61 @@ function BacklogBrowser() {
     priority: false,
     tag: false,
   });
-  const [allTagOptions, setAllTagOptions] = useState<string[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [backlogName, setBacklogName] = useState<string>('Backlog');
   const [isProjectSelectorOpen, setIsProjectSelectorOpen] = useState(false);
+  const [lastVersion, setLastVersion] = useState<number>(0);
+  const configsRef = useRef<BacklogConfig[]>([]);
+
+  // Keep ref in sync with state
+  useEffect(() => {
+    configsRef.current = configs;
+  }, [configs]);
+
+  const refreshData = async (projectNameOverride?: string) => {
+    try {
+      const projectName = projectNameOverride || selectedProjectParam || configsRef.current[0]?.name || 'Backlog';
+      const queryParam = `?project=${encodeURIComponent(projectName)}`;
+      const resp = await fetch(`${API_URL}${queryParam}`);
+      if (!resp.ok) throw new Error(`HTTP ${resp.status} fetching ${API_URL}`);
+      const data = await resp.json();
+      const items = Array.isArray(data) ? data : (data.items || []);
+      
+      setAllItems(items);
+      setBacklogName(projectName);
+
+      // If we got configs in the response, update them too
+      if (data.configs) {
+        setConfigs(data.configs);
+        const currentConfig = data.configs.find((c: BacklogConfig) => c.name === projectName);
+        setProjectIcon(currentConfig?.icon);
+        setVaultId(currentConfig?.vaultId);
+      }
+
+      const tags: string[] = [...new Set<string>(items.flatMap((i: BacklogItem) => i.tags || []))].sort();
+      setAllTagOptions(tags);
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : String(err);
+      setError(`Could not load backlog data: ${message}`);
+    }
+  };
 
   useEffect(() => {
     async function init() {
       try {
-        // First fetch all configs to determine default project
-        const configResp = await fetch(`${API_URL}`);
+        // First fetch all configs and items
+        const configResp = await fetch(`${API_URL}${selectedProjectParam ? `?project=${encodeURIComponent(selectedProjectParam)}` : ''}`);
         if (!configResp.ok) throw new Error(`HTTP ${configResp.status} fetching ${API_URL}`);
         const configData = await configResp.json();
         const backlogConfigs = configData.configs || [];
+        const items = configData.items || [];
         
-        // Use selected project param, or default to first project
         const projectName = selectedProjectParam || backlogConfigs[0]?.name || 'Backlog';
-        
-        // Fetch items for the selected/default project
-        const queryParam = `?project=${encodeURIComponent(projectName)}`;
-        const resp = await fetch(`${API_URL}${queryParam}`);
-        if (!resp.ok) throw new Error(`HTTP ${resp.status} fetching ${API_URL}`);
-        const data = await resp.json();
-        const items = Array.isArray(data) ? data : (data.items || []);
         
         setAllItems(items);
         setConfigs(backlogConfigs);
         setBacklogName(projectName);
 
-        // Find the current project config and get its icon and vaultId
         const currentConfig = backlogConfigs.find((c: BacklogConfig) => c.name === projectName);
         setProjectIcon(currentConfig?.icon);
         setVaultId(currentConfig?.vaultId);
@@ -82,6 +108,36 @@ function BacklogBrowser() {
       }
     }
     init();
+  }, [selectedProjectParam]);
+
+  useEffect(() => {
+    const eventSource = new EventSource('/api/backlog/events');
+
+    const handleUpdate = (e: MessageEvent) => {
+      try {
+        const data = JSON.parse(e.data);
+        const newVersion = data.version;
+        
+        setLastVersion(prev => {
+          if (prev !== 0 && newVersion > prev) {
+            console.log(`[SSE] New version ${newVersion} detected (was ${prev}), refreshing...`);
+            refreshData();
+          }
+          return newVersion;
+        });
+      } catch (err) {
+        console.error('[SSE] Error processing event:', err);
+      }
+    };
+
+    eventSource.addEventListener('connected', handleUpdate);
+    eventSource.addEventListener('update', handleUpdate);
+    
+    eventSource.onerror = (err) => {
+      console.error('[SSE] EventSource error:', err);
+    };
+
+    return () => eventSource.close();
   }, [selectedProjectParam]);
 
   const handleProjectSelect = (projectName: string) => {

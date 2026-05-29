@@ -4,8 +4,9 @@ import * as fs from 'fs';
 import * as os from 'os';
 import * as yaml from 'js-yaml';
 import * as fsExtra from 'fs-extra';
+import { EventEmitter } from 'events';
 
-interface BacklogConfig {
+export interface BacklogConfig {
   name: string;
   /** Canonical host path — used for Obsidian deep-links and display. */
   path: string;
@@ -20,7 +21,7 @@ interface BacklogConfig {
   vaultId?: string;
 }
 
-interface BacklogItem {
+export interface BacklogItem {
   id: string;
   title: string;
   status: string;
@@ -83,8 +84,13 @@ interface Cache {
   lastLoaded?: number;
 }
 
+// Ensure these are shared across the module/process
 let inMemoryCache: Cache | null = null;
 let cacheWatcher: FSWatcher | null = null;
+let backlogWatchers: FSWatcher[] = [];
+let initialized = false;
+
+export const watcherEvents = new EventEmitter();
 
 const ensureCacheWatcher = () => {
   if (cacheWatcher || !fs.existsSync(CACHE_FILE)) return;
@@ -99,6 +105,7 @@ const ensureCacheWatcher = () => {
           const data = fs.readFileSync(CACHE_FILE, 'utf-8');
           const cache = JSON.parse(data);
           inMemoryCache = { ...cache, lastLoaded: stats.mtimeMs };
+          watcherEvents.emit('update', inMemoryCache?.lastLoaded);
         } catch (e) {
           log(`[backlog-watcher] Error reloading cache file: ${e}`);
         }
@@ -141,6 +148,11 @@ export const getBacklogConfigs = (): BacklogConfig[] => {
   return cache.configs;
 };
 
+export const getVersion = (): number => {
+  const cache = getGlobalCache();
+  return cache.lastLoaded || 0;
+};
+
 export const refreshIndex = (): BacklogItem[] => {
   const configs = loadConfig();
   log(`[backlog-watcher] Loaded ${configs.length} backlog config(s)`);
@@ -162,6 +174,7 @@ export const refreshIndex = (): BacklogItem[] => {
     inMemoryCache = { ...cache, lastLoaded: stats.mtimeMs };
     log(`[backlog-watcher] Cache written to ${CACHE_FILE} and updated in memory`);
     ensureCacheWatcher();
+    watcherEvents.emit('update', inMemoryCache.lastLoaded);
   } catch (e) {
     log(`[backlog-watcher] Cache write error: ${e}`);
   }
@@ -291,6 +304,11 @@ export const loadConfig = (): BacklogConfig[] => {
 };
 
 export const startWatching = (): void => {
+  if (backlogWatchers.length > 0) {
+    log(`[backlog-watcher] Watchers already active, skipping startWatching`);
+    return;
+  }
+
   const configs = loadConfig();
 
   for (const config of configs) {
@@ -315,5 +333,17 @@ export const startWatching = (): void => {
     watcher.on('error', (error) => {
       log(`[backlog-watcher] Watcher error for ${config.name}: ${error}`);
     });
+    
+    backlogWatchers.push(watcher);
   }
 };
+
+export const ensureInitialized = (): void => {
+  if (!initialized) {
+    log('[backlog-watcher] Initializing...');
+    refreshIndex();
+    startWatching();
+    initialized = true;
+  }
+};
+
