@@ -1,0 +1,6 @@
+releases:
+  - name: backlog
+    namespace: default
+    chart: ./backlog-dashboard
+    values:
+      - ./backlog-dashboard/values-k3s.yaml

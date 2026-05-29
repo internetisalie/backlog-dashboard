@@ -67,6 +67,7 @@ backlog:
       - name: "Glimmer"
         path: "/home/user/Documents/src/glimmer-project"
         mountPath: "/repos/glimmer-project"
+        vaultId: "74c7f1e2262b3d9b"
         icon: "/stars@8x.png"
       - name: "Lunar"
         path: "/home/user/Documents/src/lua/lunar/docs"
