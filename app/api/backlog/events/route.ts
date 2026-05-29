@@ -8,7 +8,7 @@ export async function GET(request: Request) {
 
   const stream = new ReadableStream({
     _cleanup: null as any,
-    start(controller) {
+    start(controller: ReadableStreamDefaultController) {
       const sendEvent = (data: string, event?: string, id?: string) => {
         let msg = '';
         if (id) msg += `id: ${id}\n`;
