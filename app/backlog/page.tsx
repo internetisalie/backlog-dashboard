@@ -41,6 +41,7 @@ function BacklogBrowser() {
     priority: false,
     tag: false,
   });
+  const [allTagOptions, setAllTagOptions] = useState<string[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [backlogName, setBacklogName] = useState<string>('Backlog');
   const [isProjectSelectorOpen, setIsProjectSelectorOpen] = useState(false);
