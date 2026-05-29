@@ -151,7 +151,7 @@ function BacklogBrowser() {
       console.log('[SSE] Closing connection');
       eventSource.close();
     };
-  }, [selectedProjectParam]);
+  }, []); // Stable connection
 
   const handleProjectSelect = (projectName: string) => {
     router.push(`/backlog?project=${encodeURIComponent(projectName)}`);
