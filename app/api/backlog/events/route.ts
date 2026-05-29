@@ -5,67 +5,66 @@ export const dynamic = 'force-dynamic';
 
 export async function GET(request: Request) {
   ensureInitialized();
-  console.log('[SSE] New connection request');
+  const id = Math.random().toString(36).substring(7);
+  console.log(`[SSE][${id}] New connection request`);
+
+  let cleanupFn: (() => void) | null = null;
 
   const stream = new ReadableStream({
-    _cleanup: null as any,
     start(controller: ReadableStreamDefaultController) {
-      const sendEvent = (data: string, event?: string, id?: string) => {
+      const sendEvent = (data: string, event?: string) => {
         let msg = '';
-        if (id) msg += `id: ${id}\n`;
         if (event) msg += `event: ${event}\n`;
         msg += `data: ${data}\n\n`;
         try {
           controller.enqueue(new TextEncoder().encode(msg));
         } catch (e) {
-          console.error('[SSE] Enqueue error:', e);
+          // Stream might be closed
         }
       };
 
-      // Preamble for some browsers/proxies that buffer
+      // Preamble & initial ping
       controller.enqueue(new TextEncoder().encode(': ' + ' '.repeat(2048) + '\n\n'));
       sendEvent(': initial ping', 'ping');
 
-      // Send initial version
-      const currentVersion = getVersion();
-      console.log(`[SSE] Sending initial version: ${currentVersion}`);
-      sendEvent(JSON.stringify({ version: currentVersion }), 'connected');
-
       const onUpdate = (version: number) => {
-        console.log(`[SSE] Sending update event: ${version}`);
+        console.log(`[SSE][${id}] Sending update event: ${version}`);
         sendEvent(JSON.stringify({ version }), 'update');
       };
 
+      console.log(`[SSE][${id}] Subscribing to watcherEvents`);
       watcherEvents.on('update', onUpdate);
 
-      // Keep-alive heartbeat every 30 seconds
       const heartbeat = setInterval(() => {
         sendEvent(': heartbeat', 'ping');
-      }, 30000);
+      }, 15000);
 
-      const cleanup = () => {
-        console.log('[SSE] Cleaning up connection');
+      cleanupFn = () => {
+        console.log(`[SSE][${id}] Cleaning up connection`);
         watcherEvents.off('update', onUpdate);
         clearInterval(heartbeat);
+        try {
+          controller.close();
+        } catch (e) {}
       };
 
-      request.signal.addEventListener('abort', cleanup);
-      
-      this._cleanup = cleanup;
+      request.signal.addEventListener('abort', () => {
+        console.log(`[SSE][${id}] Request aborted`);
+        if (cleanupFn) cleanupFn();
+      });
     },
     cancel() {
-      if (this._cleanup) {
-        this._cleanup();
-      }
+      console.log(`[SSE][${id}] Stream cancelled`);
+      if (cleanupFn) cleanupFn();
     }
-  } as any);
+  });
 
   return new Response(stream, {
     headers: {
       'Content-Type': 'text/event-stream',
       'Cache-Control': 'no-cache, no-transform',
       'Connection': 'keep-alive',
-      'X-Accel-Buffering': 'no', // Disable buffering in Nginx/proxies
+      'X-Accel-Buffering': 'no',
     },
   });
 }
