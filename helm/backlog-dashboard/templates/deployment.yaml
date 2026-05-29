@@ -14,6 +14,7 @@ spec:
   template:
     metadata:
       annotations:
+        rollout/restartedAt: {{ randAlphaNum 5 | quote }}
         checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
         {{- with .Values.podAnnotations }}
         {{- toYaml . | nindent 8 }}
