@@ -78,7 +78,7 @@ backlog:
         path: "/home/user/Documents/src/sim/docs"
         mountPath: "/repos/sim"
         backlogDir: "features"
-        vaultId: "internetisalie/sim"
+        vaultId: "45948c42bac315a5"
         icon: "/stars@8x.png"
 
   volumes:
