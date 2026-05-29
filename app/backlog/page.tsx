@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useMemo, Suspense } from 'react';
+import { useState, useEffect, useMemo, Suspense, useRef } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { BacklogItem, Filters, PRIORITY_ORDER } from '@/components/backlog/types';
 import { FilterBar } from '@/components/backlog/FilterBar';
