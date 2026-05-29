@@ -22,6 +22,10 @@ export async function GET(request: Request) {
         }
       };
 
+      // Preamble for some browsers/proxies that buffer
+      controller.enqueue(new TextEncoder().encode(': ' + ' '.repeat(2048) + '\n\n'));
+      sendEvent(': initial ping', 'ping');
+
       // Send initial version
       const currentVersion = getVersion();
       console.log(`[SSE] Sending initial version: ${currentVersion}`);
