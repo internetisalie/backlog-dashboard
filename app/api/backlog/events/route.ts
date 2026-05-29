@@ -5,6 +5,7 @@ export const dynamic = 'force-dynamic';
 
 export async function GET(request: Request) {
   ensureInitialized();
+  console.log('[SSE] New connection request');
 
   const stream = new ReadableStream({
     _cleanup: null as any,
@@ -17,15 +18,17 @@ export async function GET(request: Request) {
         try {
           controller.enqueue(new TextEncoder().encode(msg));
         } catch (e) {
-          // Controller might be closed
+          console.error('[SSE] Enqueue error:', e);
         }
       };
 
       // Send initial version
       const currentVersion = getVersion();
+      console.log(`[SSE] Sending initial version: ${currentVersion}`);
       sendEvent(JSON.stringify({ version: currentVersion }), 'connected');
 
       const onUpdate = (version: number) => {
+        console.log(`[SSE] Sending update event: ${version}`);
         sendEvent(JSON.stringify({ version }), 'update');
       };
 
@@ -58,6 +61,7 @@ export async function GET(request: Request) {
       'Content-Type': 'text/event-stream',
       'Cache-Control': 'no-cache, no-transform',
       'Connection': 'keep-alive',
+      'X-Accel-Buffering': 'no', // Disable buffering in Nginx/proxies
     },
   });
 }

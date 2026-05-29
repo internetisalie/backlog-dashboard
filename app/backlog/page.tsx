@@ -112,17 +112,22 @@ function BacklogBrowser() {
   }, [selectedProjectParam]);
 
   useEffect(() => {
+    console.log('[SSE] Connecting to /api/backlog/events...');
     const eventSource = new EventSource('/api/backlog/events');
 
     const handleUpdate = (e: MessageEvent) => {
+      console.log(`[SSE] Received ${e.type} event:`, e.data);
       try {
         const data = JSON.parse(e.data);
         const newVersion = data.version;
         
         setLastVersion(prev => {
+          console.log(`[SSE] Version check: new=${newVersion}, prev=${prev}`);
           if (prev !== 0 && newVersion > prev) {
-            console.log(`[SSE] New version ${newVersion} detected (was ${prev}), refreshing...`);
+            console.log(`[SSE] New version ${newVersion} detected (was ${prev}), refreshing data...`);
             refreshData();
+          } else if (prev === 0) {
+            console.log(`[SSE] Initial version set to ${newVersion}`);
           }
           return newVersion;
         });
@@ -134,11 +139,18 @@ function BacklogBrowser() {
     eventSource.addEventListener('connected', handleUpdate);
     eventSource.addEventListener('update', handleUpdate);
     
+    eventSource.onopen = () => {
+      console.log('[SSE] Connection established');
+    };
+
     eventSource.onerror = (err) => {
       console.error('[SSE] EventSource error:', err);
     };
 
-    return () => eventSource.close();
+    return () => {
+      console.log('[SSE] Closing connection');
+      eventSource.close();
+    };
   }, [selectedProjectParam]);
 
   const handleProjectSelect = (projectName: string) => {
