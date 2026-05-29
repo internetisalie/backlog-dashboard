@@ -58,6 +58,18 @@ export function FeaturePill({ label, onClick, title }: PillProps) {
   );
 }
 
+export function RepositoryPill({ label, onClick, title }: PillProps) {
+  return (
+    <span
+      className="inline-block px-1.5 py-0.5 rounded text-[11px] bg-[#2d4a3e] text-[#6be686] mr-1 cursor-pointer hover:opacity-80"
+      onClick={onClick}
+      title={title}
+    >
+      {label}
+    </span>
+  );
+}
+
 export function TypePill({ label, onClick, title }: PillProps) {
   const colors = TYPE_COLORS[label];
   if (!colors) return null;

@@ -34,6 +34,7 @@ function BacklogBrowser() {
     priority: new Set(),
     tag: new Set(),
     feature: undefined,
+    repository: undefined,
   });
   const [dropdownsOpen, setDropdownsOpen] = useState({
     status: false,
@@ -102,6 +103,9 @@ function BacklogBrowser() {
     if (filters.feature) {
       items = items.filter((item) => item.feature === filters.feature);
     }
+    if (filters.repository) {
+      items = items.filter((item) => item.repository === filters.repository);
+    }
     if (filters.q) {
       const q = filters.q.toLowerCase();
       items = items.filter((item) => {
@@ -160,10 +164,13 @@ function BacklogBrowser() {
     setFilters((prev) => ({ ...prev, [type]: new Set() }));
   };
 
-  const handleFilterClick = (type: 'status' | 'priority' | 'tag' | 'feature', value: string) => {
+  const handleFilterClick = (type: 'status' | 'priority' | 'tag' | 'feature' | 'repository', value: string) => {
     setFilters((prev) => {
       if (type === 'feature') {
         return { ...prev, feature: value === prev.feature ? undefined : value };
+      }
+      if (type === 'repository') {
+        return { ...prev, repository: value === prev.repository ? undefined : value };
       }
       const newSet = new Set(prev[type]);
       if (newSet.has(value)) {
@@ -227,6 +234,7 @@ function BacklogBrowser() {
         onSelectNone={handleSelectNone}
         onToggleDropdown={toggleDropdown}
         onClearFeature={() => setFilters(prev => ({ ...prev, feature: undefined }))}
+        onClearRepository={() => setFilters(prev => ({ ...prev, repository: undefined }))}
         onOpenProjectSelector={() => setIsProjectSelectorOpen(true)}
         projectCount={configs.length}
       />

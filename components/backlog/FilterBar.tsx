@@ -16,6 +16,7 @@ interface FilterBarProps {
   onSelectNone: (type: 'status' | 'priority' | 'tag') => void;
   onToggleDropdown: (type: 'status' | 'priority' | 'tag') => void;
   onClearFeature: () => void;
+  onClearRepository: () => void;
   onOpenProjectSelector?: () => void;
   projectCount?: number;
 }
@@ -34,6 +35,7 @@ export function FilterBar({
   onSelectNone,
   onToggleDropdown,
   onClearFeature,
+  onClearRepository,
   onOpenProjectSelector,
   projectCount,
 }: FilterBarProps) {
@@ -75,6 +77,13 @@ export function FilterBar({
           <div className="flex items-center gap-2 px-2 py-1 bg-[#3d3555] border border-[#b085ff] rounded-md text-[12px] text-[#b085ff] max-w-[200px]">
             <span className="truncate" title={filters.feature}>Feature: {filters.feature.split('/').pop()}</span>
             <button onClick={onClearFeature} className="hover:text-white flex-shrink-0">✕</button>
+          </div>
+        )}
+
+        {filters.repository && (
+          <div className="flex items-center gap-2 px-2 py-1 bg-[#2d4a3e] border border-[#6be686] rounded-md text-[12px] text-[#6be686] max-w-[200px]">
+            <span className="truncate" title={filters.repository}>Repo: {filters.repository}</span>
+            <button onClick={onClearRepository} className="hover:text-white flex-shrink-0">✕</button>
           </div>
         )}
 

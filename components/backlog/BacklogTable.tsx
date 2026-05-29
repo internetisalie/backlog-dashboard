@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react';
 import { BacklogItem, STATUS_COLORS } from './types';
-import { StatusPill, PriorityPill, TagPill, FeaturePill, TypePill } from './Pills';
+import { StatusPill, PriorityPill, TagPill, FeaturePill, TypePill, RepositoryPill } from './Pills';
 import { Tooltip } from './Tooltip';
 
 interface BacklogTableProps {
@@ -8,7 +8,7 @@ interface BacklogTableProps {
   sortCol: string;
   sortDir: 'asc' | 'desc';
   onSort: (col: string) => void;
-  onFilterClick: (type: 'status' | 'priority' | 'tag' | 'feature', value: string) => void;
+  onFilterClick: (type: 'status' | 'priority' | 'tag' | 'feature' | 'repository', value: string) => void;
   obsidianHref: (path: string) => string;
 }
 
@@ -222,6 +222,15 @@ export function BacklogTable({
                           label={item.feature}
                           onClick={() => onFilterClick('feature', item.feature!)}
                           title="Filter by this feature"
+                        />
+                      </div>
+                    )}
+                    {item.repository && (
+                      <div className="mt-1">
+                        <RepositoryPill
+                          label={item.repository}
+                          onClick={() => onFilterClick('repository', item.repository!)}
+                          title="Filter by this repository"
                         />
                       </div>
                     )}

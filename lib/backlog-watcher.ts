@@ -28,6 +28,7 @@ interface BacklogItem {
   estimate?: number | null;
   tags: string[];
   feature?: string;
+  repository?: string;
   parent_id?: string;
   type?: string;
   created: string;
@@ -257,6 +258,7 @@ export const indexBacklog = (root: string, backlogName: string, backlogDir?: str
           estimate: (fields.estimate as number) ?? null,
           tags: Array.isArray(fields.tags) ? (fields.tags as string[]) : [],
           feature: fields.feature ? String(fields.feature) : undefined,
+          repository: fields.repository ? String(fields.repository) : undefined,
           parent_id: fields.parent_id ? String(fields.parent_id) : undefined,
           type: fields.type ? String(fields.type) : undefined,
           created: String(fields.created || ''),

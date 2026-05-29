@@ -9,8 +9,10 @@ export interface BacklogItem {
   created: string;
   path: string;
   feature?: string;
+  repository?: string;
   parent_id?: string;
   type?: string;
+  backlogName: string;
 }
 
 export interface Filters {
@@ -19,6 +21,7 @@ export interface Filters {
   priority: Set<string>;
   tag: Set<string>;
   feature?: string;
+  repository?: string;
 }
 
 export type FilterType = 'status' | 'priority' | 'tag';
