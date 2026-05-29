@@ -79,6 +79,12 @@ backlog:
         backlogDir: "features"
         vaultId: "711c1b0e7299620f"
         icon: "/rocket@8x.png"
+      - name: "Sim"
+        path: "/home/mini/Documents/src/sim/docs"
+        mountPath: "/repos/sim"
+        backlogDir: "features"
+        vaultId: "internetisalie/sim"
+        icon: "/stars@8x.png"
 
   # Volume mounts - ensure these paths exist on k3s node
   volumes:
@@ -90,6 +96,11 @@ backlog:
       hostPath:
         path: /home/mini/Documents/src/lua/lunar/docs
         type: Directory
+    - name: sim
+      hostPath:
+        path: /home/mini/Documents/src/sim/docs
+        type: Directory
+
 
 # Use emptyDir for cache (lightweight, regenerated on pod restart)
 persistence:

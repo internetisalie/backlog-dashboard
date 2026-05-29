@@ -60,7 +60,6 @@ nodeSelector: {}
 tolerations: []
 affinity: {}
 
-# Backlog configuration
 backlog:
   config:
     backlogs:
@@ -75,6 +74,12 @@ backlog:
         backlogDir: "features"
         vaultId: "711c1b0e7299620f"
         icon: "/rocket@8x.png"
+      - name: "Sim"
+        path: "/home/user/Documents/src/sim/docs"
+        mountPath: "/repos/sim"
+        backlogDir: "features"
+        vaultId: "internetisalie/sim"
+        icon: "/stars@8x.png"
 
   volumes:
     - name: glimmer
@@ -85,6 +90,11 @@ backlog:
       hostPath:
         path: /home/user/Documents/src/lua/lunar/docs
         type: Directory
+    - name: sim
+      hostPath:
+        path: /home/user/Documents/src/sim/docs
+        type: Directory
+
 
 persistence:
   enabled: true
