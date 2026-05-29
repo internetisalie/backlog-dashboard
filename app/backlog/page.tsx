@@ -53,21 +53,28 @@ function BacklogBrowser() {
   const [isProjectSelectorOpen, setIsProjectSelectorOpen] = useState(false);
   const [lastVersion, setLastVersion] = useState<number>(0);
   const configsRef = useRef<BacklogConfig[]>([]);
+  const projectRef = useRef<string | null>(null);
 
-  // Keep ref in sync with state
+  // Keep refs in sync with state/params
   useEffect(() => {
     configsRef.current = configs;
   }, [configs]);
+  
+  useEffect(() => {
+    projectRef.current = selectedProjectParam;
+  }, [selectedProjectParam]);
 
   const refreshData = async (projectNameOverride?: string) => {
+    const projectName = projectNameOverride || projectRef.current || configsRef.current[0]?.name || 'Backlog';
+    console.log(`[UI] refreshData triggered for project: ${projectName}`);
     try {
-      const projectName = projectNameOverride || selectedProjectParam || configsRef.current[0]?.name || 'Backlog';
       const queryParam = `?project=${encodeURIComponent(projectName)}`;
       const resp = await fetch(`${API_URL}${queryParam}`);
       if (!resp.ok) throw new Error(`HTTP ${resp.status} fetching ${API_URL}`);
       const data = await resp.json();
       const items = Array.isArray(data) ? data : (data.items || []);
       
+      console.log(`[UI] refreshData complete: ${items.length} items fetched`);
       setAllItems(items);
       setBacklogName(projectName);
 
@@ -83,6 +90,7 @@ function BacklogBrowser() {
       setAllTagOptions(tags);
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : String(err);
+      console.error('[UI] refreshData error:', message);
       setError(`Could not load backlog data: ${message}`);
     }
   };
@@ -99,6 +107,7 @@ function BacklogBrowser() {
         
         const projectName = selectedProjectParam || backlogConfigs[0]?.name || 'Backlog';
         
+        console.log(`[UI] Initial load complete: ${items.length} items, project: ${projectName}`);
         setAllItems(items);
         setConfigs(backlogConfigs);
         setBacklogName(projectName);
@@ -130,10 +139,10 @@ function BacklogBrowser() {
         setLastVersion(prev => {
           console.log(`[SSE] Version check: new=${newVersion}, prev=${prev}`);
           if (prev !== 0 && newVersion > prev) {
-            console.log(`[SSE] New version ${newVersion} detected (was ${prev}), refreshing data...`);
+            console.log(`[SSE] New version detected, refreshing UI...`);
             refreshData();
           } else if (prev === 0) {
-            console.log(`[SSE] Initial version set to ${newVersion}`);
+            console.log(`[SSE] Initial version: ${newVersion}`);
           }
           return newVersion;
         });
