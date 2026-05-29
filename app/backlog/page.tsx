@@ -18,9 +18,15 @@ interface BacklogConfig {
 const API_URL = '/api/backlog';
 
 function BacklogBrowser() {
+  console.log('[UI] Rendering BacklogBrowser');
   const searchParams = useSearchParams();
   const router = useRouter();
   const selectedProjectParam = searchParams.get('project');
+
+  useEffect(() => {
+    console.log('[UI] BacklogBrowser mounted');
+    return () => console.log('[UI] BacklogBrowser unmounted');
+  }, []);
 
   const [allItems, setAllItems] = useState<BacklogItem[]>([]);
   const [configs, setConfigs] = useState<BacklogConfig[]>([]);
