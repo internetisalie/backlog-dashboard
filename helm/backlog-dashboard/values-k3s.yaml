@@ -6,7 +6,7 @@ replicaCount: 1
 image:
   repository: registry.internetisalie.net/backlog-dashboard
   pullPolicy: Always
-  tag: "0.2.1"
+  tag: "0.2.2"
 
 serviceAccount:
   create: true

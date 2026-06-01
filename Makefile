@@ -70,7 +70,8 @@ helm-upgrade:
 	@echo "📦 Upgrading Helm release..."
 	helm upgrade $(HELM_RELEASE) $(HELM_CHART) \
 		-f $(HELM_VALUES) \
-		-n $(K8S_NAMESPACE)
+		-n $(K8S_NAMESPACE) \
+		--set image.tag=$(DOCKER_TAG)
 	@echo "✅ Helm upgrade complete"
 
 deploy: helm-upgrade
