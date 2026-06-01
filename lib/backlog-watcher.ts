@@ -1,4 +1,5 @@
 import { watch, FSWatcher } from 'fs';
+import * as chokidar from 'chokidar';
 import * as path from 'path';
 import * as fs from 'fs';
 import * as os from 'os';
@@ -199,27 +200,13 @@ const parseFrontMatter = (text: string): { fields: Record<string, unknown>; body
   const fmText = text.substring(3, end).trim();
   const body = text.substring(end + 4).replace(/^\n+/, '');
 
-  const fields: Record<string, unknown> = {};
-  for (const line of fmText.split('\n')) {
-    const match = line.match(/^([\w-]+):\s*(.*)/);
-    if (!match) {
-      continue;
-    }
-    const [, key, val] = match;
-    const value = val.trim();
-    if (value.startsWith('[') && value.endsWith(']')) {
-      const inner = value.slice(1, -1);
-      fields[key] = inner.split(',').map((v) => v.trim()).filter(Boolean);
-    } else if (value.startsWith('"') && value.endsWith('"')) {
-      fields[key] = value.slice(1, -1);
-    } else if (/^-?\d+$/.test(value)) {
-      fields[key] = parseInt(value, 10);
-    } else if (value !== '') {
-      fields[key] = value;
-    }
+  try {
+    const fields = (yaml.load(fmText) || {}) as Record<string, unknown>;
+    return { fields, body };
+  } catch (e) {
+    log(`[backlog-watcher] YAML parse error in front matter: ${e}`);
+    return { fields: {}, body };
   }
-
-  return { fields, body };
 };
 
 export const indexBacklog = (root: string, backlogName: string, backlogDir?: string): BacklogItem[] => {
@@ -323,8 +310,16 @@ export const startWatching = (): void => {
 
     log(`[backlog-watcher] Watching backlog: ${config.name} at ${backlogDir}`);
 
-    const watcher = watch(backlogDir, { recursive: true }, (eventType, filename) => {
-      if (filename && filename.endsWith('.md') && !SKIP_FILES.includes(filename)) {
+    const watcher = chokidar.watch(backlogDir, {
+      ignoreInitial: true,
+      ignored: (p) => {
+        const basename = path.basename(p);
+        return SKIP_FILES.includes(basename);
+      }
+    });
+
+    watcher.on('all', (event, filename) => {
+      if (filename && filename.endsWith('.md')) {
         log(`[backlog-watcher] Change detected in ${filename}, refreshing index...`);
         refreshIndex();
       }
@@ -334,7 +329,7 @@ export const startWatching = (): void => {
       log(`[backlog-watcher] Watcher error for ${config.name}: ${error}`);
     });
     
-    backlogWatchers.push(watcher);
+    backlogWatchers.push(watcher as any);
   }
 };
 
