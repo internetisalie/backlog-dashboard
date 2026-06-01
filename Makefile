@@ -43,7 +43,7 @@ help:
 	@echo "Example:"
 	@echo "  make build-push-deploy DOCKER_TAG=v1.0.0"
 
-docker-build:
+docker-build: helm-sync
 	@echo "🐳 Building Docker image: $(IMAGE_FULL)"
 	docker build -t $(DOCKER_IMAGE):$(DOCKER_TAG) .
 	docker tag $(DOCKER_IMAGE):$(DOCKER_TAG) $(IMAGE_FULL)
@@ -58,12 +58,19 @@ build: docker-build
 
 push: docker-push
 
+helm-sync:
+	@echo "🔄 Syncing Helm chart version with package.json..."
+	sed -i 's/^version: .*/version: $(VERSION)/' $(HELM_CHART)/Chart.yaml
+	sed -i 's/^appVersion: .*/appVersion: "$(VERSION)"/' $(HELM_CHART)/Chart.yaml
+	@echo "✅ Sync complete"
+
 helm-install:
 	@echo "📦 Installing Helm chart..."
 	helm install $(HELM_RELEASE) $(HELM_CHART) \
 		-f $(HELM_VALUES) \
 		-n $(K8S_NAMESPACE) \
-		--create-namespace
+		--create-namespace \
+		--set image.tag=$(DOCKER_TAG)
 	@echo "✅ Helm install complete"
 
 helm-upgrade:
