@@ -97,13 +97,14 @@ Backlog items are Markdown files with YAML front matter located in the configure
 ---
 id: "PROJ-001"                          # Required or extractable from title
 title: "Feature title"                  # Required: item title
-type: "epic|feature|user-story|task"   # Optional: semantic type for hierarchy
-parent_id: "PROJ"                       # Optional: parent item ID (for hierarchies)
+type: "epic|feature|user-story|spec|design|plan" # Optional: semantic type
+parent_id: "PROJ"                       # Optional: parent item ID
 status: "backlog|planned|in-progress|review|done|cancelled"
 priority: "critical|high|medium|low"
 estimate: 5                             # Optional: story points
 tags: [tag1, tag2]                      # Optional: list of tags
-feature: "features/path"                # Optional: feature category (Glimmer style)
+feature: "features/path"                # Optional: feature category
+repository: "repo-name"                 # Optional: target repository
 created: "2026-05-20"                   # Optional: creation date
 ---
 ```
@@ -114,13 +115,14 @@ created: "2026-05-20"                   # Optional: creation date
 |-------|------|----------|---------|
 | **`id`** | string | Yes* | Unique identifier (or extracted from title) |
 | **`title`** | string | Yes | Item title |
-| **`type`** | enum | No | `epic` / `feature` / `user-story` / `task` — for hierarchical organization |
-| **`parent_id`** | string | No | Parent item ID (enables hierarchy: parent → children via filtering) |
-| **`status`** | enum | Yes | Current state: backlog, planned, in-progress, review, done, cancelled |
-| **`priority`** | enum | Yes | Priority level: critical, high, medium, low |
-| **`estimate`** | number | No | Story points or time estimate |
+| **`type`** | enum | No | `epic`, `feature`, `user-story`, `spec`, `design`, `plan` |
+| **`parent_id`** | string | No | Parent item ID (enables hierarchy: parent → children) |
+| **`status`** | enum | Yes | `backlog`, `planned`, `in-progress`, `review`, `done`, `cancelled` |
+| **`priority`** | enum | Yes | `critical`, `high`, `medium`, `low` |
+| **`estimate`** | number | No | Story points or effort estimate |
 | **`tags`** | array | No | List of tags for filtering and categorization |
-| **`feature`** | string | No | Feature category (semantic grouping, e.g., "features/data-layer") — used by Glimmer backlog |
+| **`feature`** | string | No | Feature category (semantic grouping, e.g., "features/data-layer") |
+| **`repository`**| string | No | Target repository for the work |
 | **`created`** | string | No | ISO date string (YYYY-MM-DD) when the item was created |
 
 *ID is required OR extractable from title pattern (e.g., `INSP-42: Title`)
